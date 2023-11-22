@@ -21,6 +21,7 @@
         <junit.version>4.13.2</junit.version>
         <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
         <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
+        <maven-compiler.release>17</maven-compiler.release>
     </properties>
 
     <dependencies>
@@ -89,8 +90,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven-compiler-plugin.version}</version>
                 <configuration>
-                    <source>8</source>
-                    <target>8</target>
+                    <release>${maven-compiler.release}</release>
                 </configuration>
             </plugin>
             <plugin>
