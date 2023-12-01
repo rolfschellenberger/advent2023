@@ -9,11 +9,9 @@ fun main() {
 class Day01 : Day() {
     override fun solve1(lines: List<String>) {
         println(
-            lines
-                .filter { it.isNotBlank() }
-                .sumOf {
-                    toValue(it)
-                }
+            lines.sumOf {
+                toValue(it)
+            }
         )
     }
 
@@ -26,9 +24,7 @@ class Day01 : Day() {
 
     override fun solve2(lines: List<String>) {
         println(
-            lines.filter {
-                it.isNotBlank()
-            }.map {
+            lines.map {
                 textToNumber(it)
             }.sumOf {
                 toValue(it)

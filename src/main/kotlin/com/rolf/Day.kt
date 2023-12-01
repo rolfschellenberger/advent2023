@@ -1,6 +1,7 @@
 package com.rolf
 
 import com.rolf.util.readLines
+import com.rolf.util.removeLastEmptyLine
 
 abstract class Day {
 
@@ -17,14 +18,14 @@ abstract class Day {
 
         println("-- Part 1 --")
         val s1 = System.currentTimeMillis()
-        solve1(readLines("/$day.txt"))
+        solve1(removeLastEmptyLine(readLines("/$day.txt")))
         println("-- ${System.currentTimeMillis() - s1}ms --")
 
         println()
 
         println("-- Part 2 --")
         val s2 = System.currentTimeMillis()
-        solve2(readLines("/$day.txt"))
+        solve2(removeLastEmptyLine(readLines("/$day.txt")))
         println("-- ${System.currentTimeMillis() - s2}ms --")
     }
 

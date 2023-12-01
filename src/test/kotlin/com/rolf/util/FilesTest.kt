@@ -1,6 +1,7 @@
 package com.rolf.util
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Test
 
 class FilesTest {
@@ -70,5 +71,15 @@ class FilesTest {
         assertEquals(5, groups[0].size)
         assertEquals(5, groups[1].size)
         assertEquals(5, groups[2].size)
+    }
+
+    @Test
+    fun testRemoveLastEmptyLine() {
+        val lines = readLines("/text-empty-last-line.txt")
+        assertEquals(10, lines.size)
+        assertEquals("", lines.last())
+        val cleanLines = removeLastEmptyLine(lines)
+        assertEquals(9, cleanLines.size)
+        assertNotEquals("", cleanLines.last())
     }
 }

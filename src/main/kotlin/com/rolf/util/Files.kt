@@ -52,3 +52,10 @@ fun groupLines(lines: List<String>, match: String): List<List<String>> {
     groups.add(group)
     return groups
 }
+
+fun removeLastEmptyLine(lines: List<String>): List<String> {
+    if (lines.isNotEmpty() && lines.last().isEmpty()) {
+        return lines.subList(0, lines.size - 1)
+    }
+    return lines
+}
