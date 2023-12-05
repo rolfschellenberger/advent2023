@@ -221,6 +221,128 @@ class CollectionsTest {
     }
 
     @Test
+    fun testIntRangeToLongRange() {
+        assertEquals(4L..9L, (4..9).toLongRange())
+    }
+
+    @Test
+    fun testIntRangeRemove() {
+        assertEquals(listOf(3..8), (3..8).remove(null))
+        assertEquals(listOf(3..8), (3..8).remove(100..200))
+        assertEquals(emptyList<IntRange>(), (3..8).remove((3..8)))
+        assertEquals(emptyList<IntRange>(), (3..8).remove((1..8)))
+        assertEquals(emptyList<IntRange>(), (3..8).remove((3..10)))
+        assertEquals(emptyList<IntRange>(), (3..8).remove((1..10)))
+        assertEquals(listOf(6..8), (3..8).remove((1..5)))
+        assertEquals(listOf(3..4), (3..8).remove((5..10)))
+        assertEquals(
+            listOf(
+                3..4,
+                7..8
+            ), (3..8).remove((5..6))
+        )
+    }
+
+    @Test
+    fun testIntRangeSplit() {
+        assertEquals(listOf(3..8), (3..8).split((10..20)))
+        assertEquals(listOf(3..8), (3..8).split((3..8)))
+        assertEquals(listOf(3..8), (3..8).split((1..8)))
+        assertEquals(listOf(3..8), (3..8).split((3..10)))
+        assertEquals(listOf(3..8), (3..8).split((1..10)))
+        assertEquals(listOf(3..5, 6..8), (3..8).split((1..5)))
+        assertEquals(listOf(3..4, 5..8), (3..8).split((5..10)))
+        assertEquals(
+            listOf(
+                3..4,
+                5..6,
+                7..8
+            ), (3..8).split((5..6))
+        )
+    }
+
+    @Test
+    fun testIntRangeAdd() {
+        assertEquals(15..18, (5..8).add(10))
+        assertEquals(4..7, (5..8).add(-1))
+    }
+
+    @Test
+    fun testLongRangeSize() {
+        assertEquals(3, (3L..5).size())
+        assertEquals(3, (5L until 8).size())
+        assertEquals(1, (10L..10).size())
+    }
+
+    @Test
+    fun testLongRangeOverlap() {
+        assertEquals(5L..8, (1L..8).overlap(5L..10))
+        assertEquals(5L..8, (5L..10).overlap(1L..8))
+        assertEquals(5L..5, (1L..5).overlap(5L..10))
+        assertEquals(5L..8, (1L..15).overlap(5L..8))
+        assertEquals(5L..8, (5L..8).overlap(1L..15))
+        assertNull((5L..8).overlap(9L..15))
+    }
+
+    @Test
+    fun testLongRangeContains() {
+        assertTrue((1L..6).contains(1L..3))
+        assertTrue((1L..6).contains(2L..6))
+        assertTrue((1L..6).contains(3L..3))
+        assertFalse((3L..6).contains(1L..2))
+        assertFalse((3L..6).contains(1L..4))
+        assertFalse((3L..6).contains(5L..8))
+        assertFalse((3L..6).contains(7L..8))
+    }
+
+    @Test
+    fun testLongRangeToIntRange() {
+        assertEquals(4L..9L, (4..9).toLongRange())
+    }
+
+    @Test
+    fun testLongRangeRemove() {
+        assertEquals(listOf(3L..8L), (3L..8L).remove(null))
+        assertEquals(listOf(3L..8L), (3L..8L).remove(100L..200L))
+        assertEquals(emptyList<LongRange>(), (3L..8L).remove((3L..8L)))
+        assertEquals(emptyList<LongRange>(), (3L..8L).remove((1L..8L)))
+        assertEquals(emptyList<LongRange>(), (3L..8L).remove((3L..10L)))
+        assertEquals(emptyList<LongRange>(), (3L..8L).remove((1L..10L)))
+        assertEquals(listOf(6L..8L), (3L..8L).remove((1L..5L)))
+        assertEquals(listOf(3L..4L), (3L..8L).remove((5L..10L)))
+        assertEquals(
+            listOf(
+                3L..4L,
+                7L..8L
+            ), (3L..8L).remove((5L..6L))
+        )
+    }
+
+    @Test
+    fun testLongRangeSplit() {
+        assertEquals(listOf(3L..8L), (3L..8L).split((10L..20L)))
+        assertEquals(listOf(3L..8L), (3L..8L).split((3L..8L)))
+        assertEquals(listOf(3L..8L), (3L..8L).split((1L..8L)))
+        assertEquals(listOf(3L..8L), (3L..8L).split((3L..10L)))
+        assertEquals(listOf(3L..8L), (3L..8L).split((1L..10L)))
+        assertEquals(listOf(3L..5L, 6L..8L), (3L..8L).split((1L..5L)))
+        assertEquals(listOf(3L..4L, 5L..8L), (3L..8L).split((5L..10L)))
+        assertEquals(
+            listOf(
+                3L..4L,
+                5L..6L,
+                7L..8L
+            ), (3L..8L).split((5L..6L))
+        )
+    }
+
+    @Test
+    fun testLongRangeAdd() {
+        assertEquals(15L..18L, (5L..8L).add(10L))
+        assertEquals(4L..7L, (5L..8L).add(-1L))
+    }
+
+    @Test
     fun testDeQueueShift() {
         val dequeue = ArrayDeque(listOf(1, 2, 3, 4, 5))
         dequeue.shift(-1)

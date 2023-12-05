@@ -10,59 +10,49 @@ fun main() {
 
 class Day05 : Day() {
     override fun solve1(lines: List<String>) {
-        val groups = groupLines(lines, "")
-        val seedsLine = groups[0].first()
-        val maps = groups.subList(1, groups.size)
-        val (_, seedNumbers) = splitLine(seedsLine, ": ")
-        val seeds = splitLine(seedNumbers, " ").map { it.toLong() }
-
-        val mappings = maps.map {
-            toMap(it)
+        val (seeds, mappings) = parse(lines)
+        var seedRanges = seeds.map {
+            it..it
         }
 
-        var minLocation = Long.MAX_VALUE
-        for (seed in seeds) {
-            var value = seed
-            for (mapping in mappings) {
-                value = mapping.map(value)
+        for (mapping in mappings) {
+            seedRanges = mapping.map(seedRanges)
+        }
+        println(
+            seedRanges.minOfOrNull {
+                it.first
             }
-            minLocation = minOf(minLocation, value)
-        }
-        println(minLocation)
+        )
     }
 
     override fun solve2(lines: List<String>) {
+        val (seeds, mappings) = parse(lines)
+        var seedRanges = (seeds.indices step 2).map {
+            val start = seeds[it]
+            val length = seeds[it + 1]
+            start until (start + length)
+        }
+
+        for (mapping in mappings) {
+            seedRanges = mapping.map(seedRanges)
+        }
+        println(
+            seedRanges.minOfOrNull {
+                it.first
+            }
+        )
+    }
+
+    private fun parse(lines: List<String>): Pair<List<Long>, List<Mapping>> {
         val groups = groupLines(lines, "")
         val seedsLine = groups[0].first()
         val maps = groups.subList(1, groups.size)
         val (_, seedNumbers) = splitLine(seedsLine, ": ")
         val seeds = splitLine(seedNumbers, " ").map { it.toLong() }
-
-        val newSeeds = mutableListOf<LongRange>()
-        for (i in seeds.indices step 2) {
-            val start = seeds[i]
-            val length = seeds[i + 1]
-            val range = start until (start + length)
-            newSeeds.add(range)
-        }
-
         val mappings = maps.map {
             toMap(it)
         }
-
-        // TODO: Optimize, since it runs for ~3 minutes
-        var minLocation = Long.MAX_VALUE
-        for (range in newSeeds) {
-            println(range)
-            for (seed in range) {
-                var value = seed
-                for (mapping in mappings) {
-                    value = mapping.map(value)
-                }
-                minLocation = minOf(minLocation, value)
-            }
-        }
-        println(minLocation)
+        return Pair(seeds, mappings)
     }
 
     private fun toMap(mapLines: List<String>): Mapping {
