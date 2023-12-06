@@ -17,6 +17,14 @@ class Day06 : Day() {
         )
     }
 
+    private fun parseRaces(timeLine: String, distanceLine: String): List<Race> {
+        val times = parseNumbers(timeLine)
+        val distances = parseNumbers(distanceLine)
+        return times.zip(distances).map {
+            Race(it.first, it.second)
+        }
+    }
+
     override fun solve2(lines: List<String>) {
         val race = parseRace(lines[0], lines[1])
         println(
@@ -30,14 +38,6 @@ class Day06 : Day() {
         val time = times.joinToString("").toLong()
         val distance = distances.joinToString("").toLong()
         return Race(time, distance)
-    }
-
-    private fun parseRaces(timeLine: String, distanceLine: String): List<Race> {
-        val times = parseNumbers(timeLine)
-        val distances = parseNumbers(distanceLine)
-        return times.zip(distances).map {
-            Race(it.first, it.second)
-        }
     }
 
     private fun parseNumbers(line: String): List<Long> {
