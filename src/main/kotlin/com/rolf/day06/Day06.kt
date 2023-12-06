@@ -1,6 +1,7 @@
 package com.rolf.day06
 
 import com.rolf.Day
+import com.rolf.util.splitLine
 
 fun main() {
     Day06().run()
@@ -8,12 +9,7 @@ fun main() {
 
 class Day06 : Day() {
     override fun solve1(lines: List<String>) {
-        val races = listOf(
-            Race(46, 358),
-            Race(68, 1054),
-            Race(98, 1807),
-            Race(66, 1080)
-        )
+        val races = parseRaces(lines[0], lines[1])
         println(
             races.map {
                 it.wins()
@@ -22,8 +18,32 @@ class Day06 : Day() {
     }
 
     override fun solve2(lines: List<String>) {
+        val race = parseRace(lines[0], lines[1])
         println(
-            Race(46689866, 358105418071080).wins()
+            race.wins()
         )
+    }
+
+    private fun parseRace(timeLine: String, distanceLine: String): Race {
+        val times = parseNumbers(timeLine)
+        val distances = parseNumbers(distanceLine)
+        val time = times.joinToString("").toLong()
+        val distance = distances.joinToString("").toLong()
+        return Race(time, distance)
+    }
+
+    private fun parseRaces(timeLine: String, distanceLine: String): List<Race> {
+        val times = parseNumbers(timeLine)
+        val distances = parseNumbers(distanceLine)
+        return times.zip(distances).map {
+            Race(it.first, it.second)
+        }
+    }
+
+    private fun parseNumbers(line: String): List<Long> {
+        val (_, numbersString) = splitLine(line, ":")
+        return splitLine(numbersString, " ")
+            .filter { it.isNotBlank() }
+            .map { it.toLong() }
     }
 }
