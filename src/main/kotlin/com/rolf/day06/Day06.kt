@@ -17,22 +17,13 @@ class Day06 : Day() {
         println(
             races.map {
                 it.wins()
-            }.map {
-                it.size
             }.reduce { a, b -> a * b }
         )
     }
 
     override fun solve2(lines: List<String>) {
-        val races = listOf(
-            Race(46689866, 358105418071080),
-        )
         println(
-            races.map {
-                it.wins()
-            }.map {
-                it.size
-            }.reduce { a, b -> a * b }
+            Race(46689866, 358105418071080).wins()
         )
     }
 }
