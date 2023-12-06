@@ -4,7 +4,7 @@ import com.rolf.util.add
 import com.rolf.util.hasOverlap
 import com.rolf.util.split
 
-class Mapping(
+data class Mapping(
     private val name: String,
     private val conversions: List<Conversion>
 ) {
@@ -41,9 +41,5 @@ class Mapping(
             }
         }
         return shiftedRanges
-    }
-
-    override fun toString(): String {
-        return "Mapping(name='$name', conversions=$conversions)"
     }
 }
