@@ -10,10 +10,15 @@ data class Hand(
         // Returns a positive number if the other string’s ASCII value is smaller than the main string
 
         // Compare type
-        val type = getType()
-        val otherType = other.getType()
-        val typeCompare = type.compareTo(otherType)
+        val bestType = getBestType()
+        val otherBestType = other.getBestType()
+        val typeCompare = bestType.compareTo(otherBestType)
         if (typeCompare != 0) return typeCompare
+
+//        val type = getType()
+//        val otherType = other.getType()
+//        val typeCompare = type.compareTo(otherType)
+//        if (typeCompare != 0) return typeCompare
 
         // Compare the card order
         val cardTypes = getCardTypes()
@@ -26,6 +31,45 @@ data class Hand(
         }
 
         return 0
+    }
+
+    private fun getBestType(): HandType {
+        val cardTypes = getCardTypes()
+
+        // No joker, return the original type
+        if (!cardTypes.contains(CardType.J)) {
+//            println(getType())
+            return getType()
+        }
+
+        // See what is the best hand type to create from this hand when changing jokers
+        // To make it the best option possible:
+        // 1. Look for the most frequent card and join those
+        // 2. If there are multiple cards with the same frequency, join one, it doesn't matter
+        val bestCards = getBestCards()
+        val tempHand = Hand(
+            bestCards, bid
+        )
+//        println(largestChar)
+//        println(tempHand)
+        return tempHand.getType()
+    }
+
+    private fun getBestCards(): List<Char> {
+        val cardGroups = cards.groupBy {
+            it
+        }
+        var largestGroup = 0
+        var largestChar = ' '
+        for (group in cardGroups) {
+            if (group.key != 'J' && group.value.size > largestGroup) {
+                largestGroup = group.value.size
+                largestChar = group.key
+            }
+        }
+        return cards.map {
+            if (it == 'J') largestChar else it
+        }
     }
 
     private fun getType(): HandType {
@@ -68,6 +112,6 @@ data class Hand(
     }
 
     override fun toString(): String {
-        return "Hand(cards=$cards, bid=$bid, type=${getType()})"
+        return "Hand(cards=$cards, bid=$bid, type=${getType()}, bestCards=${getBestCards()}, bestType=${getBestType()})"
     }
 }
