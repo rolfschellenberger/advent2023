@@ -13,7 +13,7 @@ class Day08 : Day() {
     override fun solve1(lines: List<String>) {
         val (instructions, groupedNodes) = parseNode(lines)
 
-        val position = groupedNodes.getValue("AAA").first()
+        val position = groupedNodes.getValue("AAA")
         println(
             getSteps(position, instructions, groupedNodes)
         )
@@ -25,7 +25,7 @@ class Day08 : Day() {
         val positions = groupedNodes.filter {
             it.key.endsWith("A")
         }.map {
-            it.value.first()
+            it.value
         }.toMutableList()
 
         val allSteps = positions.map {
@@ -34,14 +34,13 @@ class Day08 : Day() {
         println(leastCommonMultiple(allSteps))
     }
 
-    private fun parseNode(lines: List<String>): Pair<List<String>, Map<String, List<Node>>> {
+    private fun parseNode(lines: List<String>): Pair<List<String>, Map<String, Node>> {
         val groups = groupLines(lines, "")
         val instructions = splitLine(groups[0].first())
         val nodeLines = groups[1]
-        val nodes = nodeLines.map {
+        val groupedNodes = nodeLines.map {
             parseNode(it)
-        }
-        val groupedNodes = nodes.groupBy {
+        }.associateBy {
             it.from
         }
         return Pair(instructions, groupedNodes)
@@ -56,15 +55,15 @@ class Day08 : Day() {
         return Node(from, left, right)
     }
 
-    private fun getSteps(start: Node, instructions: List<String>, groupedNodes: Map<String, List<Node>>): Int {
+    private fun getSteps(start: Node, instructions: List<String>, groupedNodes: Map<String, Node>): Int {
         var position = start
         var steps = 0
         while (true) {
             if (position.from.endsWith("Z")) break
             for (instruction in instructions) {
                 position = when (instruction) {
-                    "L" -> groupedNodes.getValue(position.left).first()
-                    "R" -> groupedNodes.getValue(position.right).first()
+                    "L" -> groupedNodes.getValue(position.left)
+                    "R" -> groupedNodes.getValue(position.right)
                     else -> throw RuntimeException("Unknown instruction $instruction")
                 }
                 steps++
