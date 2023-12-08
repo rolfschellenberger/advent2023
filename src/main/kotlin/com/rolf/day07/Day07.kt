@@ -13,13 +13,9 @@ class Day07 : Day() {
             parse(it)
         }
         val sortedHands = hands.sortedDescending()
-//        println(hands)
-        for (sortedHand in sortedHands) {
-            println(sortedHand)
-        }
         println(
             sortedHands.mapIndexed { index, hand ->
-                (index + 1) * hand.bid.toLong()
+                (index + 1) * hand.bid
             }.sum()
         )
     }
@@ -30,17 +26,19 @@ class Day07 : Day() {
     }
 
     override fun solve2(lines: List<String>) {
-//        val hands = lines.map {
-//            parse(it)
-//        }
-//        val sortedHands = hands.sortedDescending()
-//        println(hands)
-//        println(sortedHands)
-//        println(
-//            sortedHands.mapIndexed { index, hand ->
-//                (index + 1) * hand.bid.toLong()
-//            }.sum()
-//        )
-        // 253176816
+        val hands = lines.map {
+            parse2(it)
+        }
+        val sortedHands = hands.sortedDescending()
+        println(
+            sortedHands.mapIndexed { index, hand ->
+                (index + 1) * hand.bid
+            }.sum()
+        )
+    }
+
+    private fun parse2(it: String): Hand2 {
+        val (cards, bid) = splitLine(it, " ")
+        return Hand2(cards.toCharArray().toList(), bid.toInt())
     }
 }
