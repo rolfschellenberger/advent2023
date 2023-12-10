@@ -547,4 +547,65 @@ class MatrixTest {
         val distance7 = maze.findPathByValue(start, end, setOf("#"))
         assertEquals(0, distance7.size)
     }
+
+    @Test
+    fun testWaterFill() {
+        val input = """
+            ..........
+            ..#.......
+            .###......
+            .#.#......
+            .#..#.....
+            .#...#....
+            .#######..
+            .#.##..#..
+            .#.#.###..
+            .#.#......
+            .#######..
+            ..........
+            """.trimIndent().lines()
+        val maze1 = MatrixString.build(splitLines(input))
+        val waterPoints1 = maze1.waterFill(Point(0, 0), setOf("#"), diagonal = false)
+        waterPoints1.forEach {
+            maze1.set(it, "~")
+        }
+        val expected1 =
+            """
+            ~~~~~~~~~~
+            ~~#~~~~~~~
+            ~###~~~~~~
+            ~#.#~~~~~~
+            ~#..#~~~~~
+            ~#...#~~~~
+            ~#######~~
+            ~#.##..#~~
+            ~#.#~###~~
+            ~#.#~~~~~~
+            ~#######~~
+            ~~~~~~~~~~
+            """.trimIndent()
+        assertEquals(expected1, maze1.toString())
+
+        val maze2 = MatrixString.build(splitLines(input))
+        val waterPoints2 = maze1.waterFill(Point(0, 0), setOf("#"), diagonal = true)
+        waterPoints2.forEach {
+            maze2.set(it, "~")
+        }
+        val expected2 =
+            """
+            ~~~~~~~~~~
+            ~~#~~~~~~~
+            ~###~~~~~~
+            ~#~#~~~~~~
+            ~#~~#~~~~~
+            ~#~~~#~~~~
+            ~#######~~
+            ~#.##~~#~~
+            ~#.#~###~~
+            ~#.#~~~~~~
+            ~#######~~
+            ~~~~~~~~~~
+            """.trimIndent()
+        assertEquals(expected2, maze2.toString())
+    }
 }

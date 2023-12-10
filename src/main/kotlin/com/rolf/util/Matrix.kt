@@ -113,6 +113,10 @@ open class Matrix<T>(internal val input: MutableList<MutableList<T>>) {
         return allPoints().filter { get(it) == value }
     }
 
+    fun find(values: Set<T>): List<Point> {
+        return allPoints().filter { values.contains(get(it)) }
+    }
+
     fun wrap(point: Point): Point {
         val x = (point.x % width() + 2 * width()) % width()
         val y = (point.y % height() + 2 * height()) % height()
@@ -374,6 +378,28 @@ open class Matrix<T>(internal val input: MutableList<MutableList<T>>) {
             }
         }
         return emptyList()
+    }
+
+    fun waterFill(
+        start: Point,
+        notAllowedValues: Set<T>,
+        horizontal: Boolean = true,
+        vertical: Boolean = true,
+        diagonal: Boolean = true
+    ): Set<Point> {
+        val watered = mutableSetOf<Point>()
+        val inspect = mutableSetOf(start)
+        val notAllowed = find(notAllowedValues).toSet()
+        while (inspect.isNotEmpty()) {
+            val neighbours = inspect.map {
+                getNeighbours(it, horizontal = horizontal, vertical = vertical, diagonal = diagonal)
+            }.flatten().toSet() - watered - notAllowed
+            watered += neighbours
+
+            inspect.clear()
+            inspect.addAll(neighbours)
+        }
+        return watered
     }
 
     open fun copy(): Matrix<T> {
