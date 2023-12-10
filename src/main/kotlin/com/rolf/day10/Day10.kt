@@ -61,9 +61,9 @@ class Day10 : Day() {
 
         while (true) {
             val directions = getDirections(grid, location)
-            val neighbours = directions.map {
+            val neighbours = directions.mapNotNull {
                 grid.getForward(location, it)
-            }.filterNotNull()
+            }
             val options = neighbours - path - start
             if (options.isEmpty()) {
                 // Are we back at start?
