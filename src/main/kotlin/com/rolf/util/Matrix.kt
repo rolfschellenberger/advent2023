@@ -69,6 +69,20 @@ open class Matrix<T>(internal val input: MutableList<MutableList<T>>) {
         return input[y].toList()
     }
 
+    fun insertRow(index: Int, defaultValue: T) {
+        val row = mutableListOf<T>()
+        for (i in 0..width()) {
+            row.add(defaultValue)
+        }
+        input.add(index, row)
+    }
+
+    fun insertColumn(index: Int, defaultValue: T) {
+        for (y in 0 until height()) {
+            input[y].add(index, defaultValue)
+        }
+    }
+
     fun getTopEdge(): List<T> {
         return getRow(0)
     }
