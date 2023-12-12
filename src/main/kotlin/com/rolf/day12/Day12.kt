@@ -10,8 +10,6 @@ fun main() {
 
 class Day12 : Day() {
     override fun solve1(lines: List<String>) {
-        println(7402)
-
         var sum = 0L
         for (line in lines) {
             val (pattern, expected) = splitLine(line, " ")
@@ -24,63 +22,6 @@ class Day12 : Day() {
                 it == expectedSequence
             }
             sum += matches
-
-//            val options = mutableListOf<String>()
-//            for (i in pattern.indices) {
-//                options.add(".")
-//                options.add("#")
-//            }
-//            val permutations = getPermutations(options, pattern.length).toSet()
-//            println(permutations.size)
-//
-//            continue
-
-
-//            val expectedSequence = splitLine(expected, ",").map { it.toInt() }
-//
-//            val sequenceOptions = mutableListOf<List<List<Int>>>()
-//            val blocks = splitLine(pattern, pattern = Pattern.compile("\\.+"))
-//            println(line)
-//            println(blocks)
-//            // Find all options for each block with ?
-//            for (block in blocks) {
-//                val blockOptions = mutableListOf<List<Int>>()
-//                if (block.contains("?")) {
-//                    val options = mutableListOf<String>()
-//                    for (i in block.indices) {
-//                        options.add(".")
-//                        options.add("#")
-//                    }
-//                    val permutations = getPermutations(
-//                        options,
-//                        3
-//                    ).toSet()
-//
-//                    for (permutation in permutations) {
-////                        println(permutation)
-//                        val permutationSequence = toSequence(
-//                            permutation.joinToString("")
-//                        )
-//                        blockOptions.add(permutationSequence)
-//                    }
-//                } else {
-//                    blockOptions.add(listOf(block.length))
-//                }
-////                println(blockOptions)
-//                sequenceOptions.add(blockOptions)
-//            }
-//            println(sequenceOptions)
-//
-//            // Now create the possible options and count if they match the expected sequence
-//            val possibleOptions = findPossibleOptions(sequenceOptions)
-//            var count = 0L
-//            for (possibleOption in possibleOptions) {
-//                if (possibleOption == expectedSequence) {
-//                    count++
-//                }
-//            }
-//            println(count)
-//            println()
         }
         println(sum)
     }
@@ -104,20 +45,82 @@ class Day12 : Day() {
         return options
     }
 
-    private fun findPossibleOptions(sequenceOptions: List<List<List<Int>>>): List<List<Int>> {
-
-        TODO("Not yet implemented")
-    }
-
     private fun toSequence(line: String): List<Int> {
         val split = splitLine(line, pattern = Pattern.compile("\\.+")).filter { it.isNotEmpty() }
-//        println(split)
         return split.map {
             it.length
         }
     }
 
     override fun solve2(lines: List<String>) {
-        println(3384337640277)
+        var sum = 0L
+        for (line in lines) {
+            val (pattern, expected) = splitLine(line, " ")
+            val newPattern = makeNewPattern(pattern)
+            val expectedSequence = splitLine(expected, ",").map { it.toInt() }
+            val newExpectedSequence = makeNewExpected(expectedSequence)
+            sum += countArrangements(newPattern, newExpectedSequence)
+        }
+        println(sum)
+    }
+
+    private fun makeNewPattern(pattern: String): String {
+        val new = mutableListOf<String>()
+        for (i in 0 until 5) {
+            new.add(pattern)
+        }
+        return new.joinToString("?")
+    }
+
+    private fun makeNewExpected(expectedSequence: List<Int>): List<Int> {
+        val new = mutableListOf<Int>()
+        for (i in 0 until 5) {
+            new.addAll(expectedSequence)
+        }
+        return new
+    }
+
+    private val cache = mutableMapOf<String, Long>()
+
+    private fun countArrangements(pattern: String, expectedSequence: List<Int>): Long {
+        // Check cache for speed
+        val key = "$pattern|$expectedSequence"
+        if (cache.containsKey(key)) return cache.getValue(key)
+
+        // Break if expected is empty
+        if (expectedSequence.isEmpty()) {
+            return if (!pattern.contains("#")) 1 else 0
+        }
+
+        val size = expectedSequence.first()
+        var total = 0L
+        for (i in pattern.indices) {
+            val range = saveSubstring(pattern, i, i + size)
+            if (
+                i + size <= pattern.length &&
+                range.all { it != '.' } &&
+                (i == 0 || pattern[i - 1] != '#') &&
+                (i + size == pattern.length || pattern[i + size] != '#')
+            ) {
+                total += countArrangements(
+                    saveSubstring(pattern, i + size + 1),
+                    expectedSequence.subList(1, expectedSequence.size)
+                )
+            }
+
+            if (pattern[i] == '#') break
+        }
+
+        // Add to cache
+        cache[key] = total
+        return total
+    }
+
+    private fun saveSubstring(input: String, startIndex: Int): String {
+        return if (startIndex >= input.length) "" else input.substring(startIndex)
+    }
+
+    private fun saveSubstring(input: String, startIndex: Int, endIndex: Int): String {
+        return if (startIndex >= input.length) "" else input.substring(startIndex, minOf(endIndex, input.length))
     }
 }
