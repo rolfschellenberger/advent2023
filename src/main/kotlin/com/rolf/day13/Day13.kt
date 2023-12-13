@@ -52,40 +52,24 @@ class Day13 : Day() {
     }
 
     private fun findMirrorInLists(lists: List<List<String>>, exclude: Int = -1): Int {
-        val mirrorOptions = mutableSetOf<Int>()
-        var first = true
-        for (list in lists) {
-            val columMirrors = findMirrorsInList(list) - exclude
-            if (first) {
-                mirrorOptions.addAll(columMirrors)
-                first = false
-            } else {
-                val intersection = mirrorOptions.intersect(columMirrors)
-                mirrorOptions.clear()
-                mirrorOptions.addAll(intersection)
-            }
+        val mirrorOptions = lists.map {
+            findMirrorsInList(it) - exclude
+        }.reduce { a, b ->
+            a.intersect(b)
         }
         return if (mirrorOptions.size != 1) -1 else mirrorOptions.first()
     }
 
-
     private fun findMirrorsInList(list: List<String>): Set<Int> {
-        val mirrors = mutableSetOf<Int>()
-        for (i in 0 until list.size - 1) {
-            val left = list.subList(0, i + 1).asReversed()
-            val right = list.subList(i + 1, list.size)
-            var mirror = true
-            for (j in 0 until minOf(left.size, right.size)) {
-                if (left[j] != right[j]) {
-                    mirror = false
-                    break
-                }
-            }
-            if (mirror) {
-                mirrors.add(i)
-            }
-        }
-        return mirrors
+        return (0 until list.size - 1).mapNotNull {
+            // Compare equal lists and reduce to the minimum size
+            val size = minOf(it + 1, list.size - it - 1)
+
+            // Compare the (reversed) left and right side
+            val left = list.subList(0, it + 1).asReversed().subList(0, size)
+            val right = list.subList(it + 1, list.size).subList(0, size)
+            if (left == right) it else null
+        }.toSet()
     }
 
     private fun opposite(value: String): String {
