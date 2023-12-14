@@ -2,6 +2,7 @@ package com.rolf
 
 import com.rolf.util.readLines
 import com.rolf.util.removeLastEmptyLine
+import kotlin.time.measureTime
 
 abstract class Day {
 
@@ -17,16 +18,18 @@ abstract class Day {
         println("+--------+")
 
         println("-- Part 1 --")
-        val s1 = System.currentTimeMillis()
-        solve1(removeLastEmptyLine(readLines("/$day.txt")))
-        println("-- ${System.currentTimeMillis() - s1}ms --")
+        val time1 = measureTime {
+            solve1(removeLastEmptyLine(readLines("/$day.txt")))
+        }.inWholeMilliseconds
+        println("-- ${time1}ms --")
 
         println()
 
         println("-- Part 2 --")
-        val s2 = System.currentTimeMillis()
-        solve2(removeLastEmptyLine(readLines("/$day.txt")))
-        println("-- ${System.currentTimeMillis() - s2}ms --")
+        val time2 = measureTime {
+            solve2(removeLastEmptyLine(readLines("/$day.txt")))
+        }.inWholeMilliseconds
+        println("-- ${time2}ms --")
     }
 
     abstract fun solve1(lines: List<String>)
