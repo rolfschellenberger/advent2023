@@ -29,7 +29,7 @@ class Day15 : Day() {
 
     override fun solve2(lines: List<String>) {
         val steps = splitLine(lines.first(), ",")
-        val boxes = List<Box>(256) { Box() }
+        val boxes = List(256) { Box() }
 
         for (step in steps) {
             val (label, numberString) =
