@@ -14,26 +14,44 @@ class Day16 : Day() {
         val grid = MatrixString.build(splitLines(lines))
         val start = grid.topLeft()
         val direction = Direction.EAST
+        val light = Light(start, direction)
+        println(getEnergized(grid, light))
+    }
 
-        val lights = mutableSetOf<Light>()
-        lights.add(Light(start, direction))
+    override fun solve2(lines: List<String>) {
+        val grid = MatrixString.build(splitLines(lines))
+        val topEdge = grid.allPoints().filter { it.y == 0 }
+            .map { Light(it, Direction.SOUTH) }
+        val bottomEdge = grid.allPoints().filter { it.y == grid.height() - 1 }
+            .map { Light(it, Direction.NORTH) }
+        val leftEdge = grid.allPoints().filter { it.x == 0 }
+            .map { Light(it, Direction.EAST) }
+        val rightEdge = grid.allPoints().filter { it.x == grid.width() - 1 }
+            .map { Light(it, Direction.WEST) }
+        val startingPoints = topEdge + bottomEdge + leftEdge + rightEdge
 
-        val path2 = followLight2(grid, Light(start, direction))
-        val uniqueLocations = visited.map {
-            it.location
-        }.toSet()
-        println(uniqueLocations.size)
+        println(
+            startingPoints.maxOfOrNull {
+                getEnergized(grid, it)
+            }
+        )
     }
 
     private val visited = mutableSetOf<Light>()
 
-    private fun followLight2(grid: MatrixString, light: Light): List<Light> {
+    private fun getEnergized(grid: MatrixString, light: Light): Int {
+        visited.clear()
+        followLight(grid, light)
+        return visited.map { it.location }.toSet().size
+    }
+
+    private fun followLight(grid: MatrixString, light: Light): List<Light> {
         visited.add(light)
         val next = getNext(grid, light)
         return next.filter {
             visited.add(it)
         }.map {
-            followLight2(grid, it)
+            followLight(grid, it)
         }.flatten()
     }
 
@@ -101,77 +119,5 @@ class Day16 : Day() {
             Light(it.first!!, it.second)
         }
         return next
-    }
-
-    private fun followLight(grid: MatrixString, light: Light): Pair<List<Light>, List<Light>> {
-        val next = getNext(grid, light)
-
-        var current = light
-        val path = mutableListOf<Light>()
-        val split = mutableListOf<Light>()
-        while (current != null) {
-            val next = getNext(grid, current)
-
-        }
-        return path to split
-    }
-
-    override fun solve2(lines: List<String>) {
-        val grid = MatrixString.build(splitLines(lines))
-        val start = grid.topLeft()
-        val direction = Direction.EAST
-
-        val rows = setOf(0, grid.height() - 1)
-        val columns = setOf(0, grid.width() - 1)
-        var maxValue = 0
-
-        val topEdge = grid.allPoints().filter { it.y == 0 }
-        val bottomEdge = grid.allPoints().filter { it.y == grid.height() - 1 }
-        val leftEdge = grid.allPoints().filter { it.x == 0 }
-        val rightEdge = grid.allPoints().filter { it.x == grid.width() - 1 }
-
-        for (point in topEdge) {
-            val direction = Direction.SOUTH
-            visited.clear()
-            followLight2(grid, Light(point, direction))
-            val uniqueLocations = visited.map {
-                it.location
-            }.toSet()
-            val value = uniqueLocations.size
-            maxValue = maxOf(maxValue, value)
-        }
-        for (point in bottomEdge) {
-            val direction = Direction.NORTH
-            visited.clear()
-            followLight2(grid, Light(point, direction))
-            val uniqueLocations = visited.map {
-                it.location
-            }.toSet()
-            val value = uniqueLocations.size
-            maxValue = maxOf(maxValue, value)
-        }
-        for (point in leftEdge) {
-            val direction = Direction.EAST
-            visited.clear()
-            followLight2(grid, Light(point, direction))
-            val uniqueLocations = visited.map {
-                it.location
-            }.toSet()
-            val value = uniqueLocations.size
-            maxValue = maxOf(maxValue, value)
-        }
-        for (point in rightEdge) {
-            val direction = Direction.WEST
-            visited.clear()
-            followLight2(grid, Light(point, direction))
-            val uniqueLocations = visited.map {
-                it.location
-            }.toSet()
-            val value = uniqueLocations.size
-            maxValue = maxOf(maxValue, value)
-        }
-
-
-        println(maxValue)
     }
 }
