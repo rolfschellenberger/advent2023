@@ -31,6 +31,8 @@ class Day17 : Day() {
                 distances[i] = 0
             }
             while (toInspect.isNotEmpty()) {
+                // FIXME: Get the location with the lowest distance
+//                val current = getCurrent(toInspect, distances)
                 val current = toInspect.removeFirst()
                 if (visited.add(current)) {
                     val destinations = getDestinations(grid, current)
@@ -160,6 +162,90 @@ class Day17 : Day() {
     }
 
     override fun solve2(lines: List<String>) {
+        val grid = MatrixInt.build(splitLines(lines))
+//        println(grid)
+
+        val distances = mutableMapOf<Step, Int>()
+        val start = grid.topLeft()
+        val end = grid.bottomRight()
+
+        for (i in 0 until 100) {
+            println(i)
+            val visited = mutableSetOf<Step>()
+            val toInspect = mutableListOf(
+                Step(start, Direction.SOUTH, 0),
+                Step(start, Direction.EAST, 0)
+            )
+//        distances[start] = 0
+            for (i in toInspect) {
+                distances[i] = 0
+            }
+            while (toInspect.isNotEmpty()) {
+                val current = toInspect.removeFirst()
+                if (visited.add(current)) {
+                    val destinations = getDestinations2(grid, current)
+                    toInspect.addAll(destinations - visited)
+//                println("toInspect: ${toInspect.size}")
+//                println("visited: ${visited.size}")
+//                println("destinations: $destinations")
+                    // Now take the current location score + the score for each destination and update the distance grid
+                    val currentScore = distances[current]!!
+//                println("currentScore: $currentScore")
+                    for (destination in destinations) {
+                        val score = getScore(grid, current.location, destination.location) + currentScore
+//                        if (destination.location == Point(11, 5) &&
+//                            destination.direction == Direction.SOUTH
+//                        ) {
+//                            println(destination)
+//                        }
+//                    println("to: $destination, $score")
+                        if (distances[destination] == null) {
+                            distances[destination] = score
+                        } else {
+                            distances[destination] = minOf(distances[destination]!!, score)
+                        }
+                    }
+                }
+            }
+            println(distances.filter {
+                it.key.location == end
+            }.minOf { it.value })
+        }
+        println(distances.filter {
+            it.key.location == end
+        }.minOf { it.value })
+    }
+
+    private fun getDestinations2(grid: MatrixInt, current: Step): List<Step> {
+        val result = mutableListOf<Step>()
+//        if (current.location == Point(8, 0) &&
+//            current.direction == Direction.EAST &&
+//            current.steps == 2) {
+//            println(current)
+//        }
+        // So we have a few options to go from each location:
+        // 1. Straight when steps < 10
+        if (current.steps < 9) {
+            val next = grid.getForward(current.location, current.direction)
+            if (next != null) {
+                result.add(Step(next, current.direction, current.steps + 1))
+            }
+        }
+        // 2. Left
+        if (current.steps >= 3) {
+            val leftDirection = current.direction.left()
+            val left = grid.getForward(current.location, leftDirection)
+            if (left != null) {
+                result.add(Step(left, leftDirection, 0))
+            }
+            // 3. Right
+            val rightDirection = current.direction.right()
+            val right = grid.getForward(current.location, rightDirection)
+            if (right != null) {
+                result.add(Step(right, rightDirection, 0))
+            }
+        }
+        return result
     }
 
 //    fun findLowestSumPath(grid: List<List<Int>>): List<Pair<Int, Int>> {
