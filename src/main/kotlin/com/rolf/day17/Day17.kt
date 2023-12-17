@@ -5,6 +5,7 @@ import com.rolf.util.Direction
 import com.rolf.util.MatrixInt
 import com.rolf.util.Point
 import com.rolf.util.splitLines
+import java.util.*
 
 fun main() {
     Day17().run()
@@ -13,57 +14,34 @@ fun main() {
 class Day17 : Day() {
     override fun solve1(lines: List<String>) {
         val grid = MatrixInt.build(splitLines(lines))
-//        println(grid)
-
         val distances = mutableMapOf<Step, Int>()
         val start = grid.topLeft()
         val end = grid.bottomRight()
 
-        for (i in 0 until 100) {
-            println(i)
-            val visited = mutableSetOf<Step>()
-            val toInspect = mutableListOf(
-                Step(start, Direction.SOUTH, 0),
-                Step(start, Direction.EAST, 0)
-            )
-//        distances[start] = 0
-            for (i in toInspect) {
-                distances[i] = 0
-            }
-            while (toInspect.isNotEmpty()) {
-                // FIXME: Get the location with the lowest distance
-//                val current = getCurrent(toInspect, distances)
-                val current = toInspect.removeFirst()
-                if (visited.add(current)) {
-                    val destinations = getDestinations(grid, current)
-                    toInspect.addAll(destinations - visited)
-//                println("toInspect: ${toInspect.size}")
-//                println("visited: ${visited.size}")
-//                println("destinations: $destinations")
-                    // Now take the current location score + the score for each destination and update the distance grid
-                    val currentScore = distances[current]!!
-//                println("currentScore: $currentScore")
-                    for (destination in destinations) {
-                        val score = getScore(grid, current.location, destination.location) + currentScore
-//                        if (destination.location == Point(11, 5) &&
-//                            destination.direction == Direction.SOUTH
-//                        ) {
-//                            println(destination)
-//                        }
-//                    println("to: $destination, $score")
-                        if (distances[destination] == null) {
-                            distances[destination] = score
-                        } else {
-                            distances[destination] = minOf(distances[destination]!!, score)
-                        }
+        val visited = mutableSetOf<Step>()
+        val toInspectSorted = PriorityQueue<Distance>()
+        toInspectSorted.add(Distance(Step(start, Direction.SOUTH, 0), 0))
+        toInspectSorted.add(Distance(Step(start, Direction.EAST, 0), 0))
+        for (i in toInspectSorted) {
+            distances[i.step] = 0
+        }
+        while (toInspectSorted.isNotEmpty()) {
+            val currentDistance = toInspectSorted.remove()
+            val current = currentDistance.step
+            if (visited.add(current)) {
+                val destinations = getDestinations(grid, current)
+                // Now take the current location score + the score for each destination and update the distance grid
+                val currentScore = distances[current]!!
+                for (destination in destinations) {
+                    val score = getScore(grid, destination.location) + currentScore
+                    if (distances[destination] == null) {
+                        distances[destination] = score
+                    } else {
+                        distances[destination] = minOf(distances[destination]!!, score)
                     }
-//                visited.add(current)
+                    toInspectSorted.add(Distance(destination, score))
                 }
             }
-//        println(distances)
-//        distances.forEach {
-//            println(it)
-//        }
         }
 
         val values = grid.copy()
@@ -76,59 +54,13 @@ class Day17 : Day() {
                 values.set(distance.key.location, distance.value)
             }
         }
-//        println(values.toString(",", "\n"))
-//        println(distances.filter {
-//            it.key.location == end
-//        })
         println(distances.filter {
             it.key.location == end
         }.minOf { it.value })
-
-
-//        println("Trace")
-//        println(distances[Step(Point(0, 0), Direction.EAST, 0)])
-//        println(distances[Step(Point(1, 0), Direction.EAST, 1)])
-//        println(distances[Step(Point(2, 0), Direction.EAST, 2)])
-//        println(distances[Step(Point(2, 1), Direction.SOUTH, 0)])
-//        println(distances[Step(Point(3, 1), Direction.EAST, 0)])
-//        println(distances[Step(Point(4, 1), Direction.EAST, 1)])
-//        println(distances[Step(Point(5, 1), Direction.EAST, 2)])
-//        println(distances[Step(Point(5, 0), Direction.NORTH, 0)])
-//        println(distances[Step(Point(6, 0), Direction.EAST, 0)])
-//        println(distances[Step(Point(7, 0), Direction.EAST, 1)])
-//
-//        println(distances[Step(Point(8, 0), Direction.EAST, 2)])
-//        println(distances[Step(Point(8, 1), Direction.SOUTH, 0)])
-//        println(distances[Step(Point(8, 2), Direction.SOUTH, 1)])
-//        println(distances[Step(Point(9, 2), Direction.EAST, 0)])
-//        println(distances[Step(Point(10, 2), Direction.EAST, 1)])
-//        println(distances[Step(Point(10, 3), Direction.SOUTH, 0)])
-//        println(distances[Step(Point(10, 4), Direction.SOUTH, 1)])
-//        println(distances[Step(Point(11, 4), Direction.EAST, 0)])
-//
-//        println(distances[Step(Point(11, 5), Direction.SOUTH, 0)])
-
-//        println(distances[Step(Point(11, 6), Direction.SOUTH, 1)])
-//        println(distances[Step(Point(11, 7), Direction.SOUTH, 2)])
-//        println(distances[Step(Point(12, 7), Direction.EAST, 0)])
-//        println(distances[Step(Point(12, 8), Direction.SOUTH, 0)])
-//        println(distances[Step(Point(12, 9), Direction.SOUTH, 1)])
-//        println(distances[Step(Point(12, 10), Direction.SOUTH, 2)])
-//        println(distances[Step(Point(11, 10), Direction.WEST, 0)])
-//        println(distances[Step(Point(11, 11), Direction.SOUTH, 0)])
-//        println(distances[Step(Point(11, 12), Direction.SOUTH, 1)])
-//        println(distances[Step(Point(12, 12), Direction.EAST, 0)])
-
-        // 1132 too high
-        // 1133 too high
-        // 1136 wrong
     }
 
-    private fun getScore(grid: MatrixInt, from: Point, to: Point): Int {
-        val path = grid.findPath(from, to)
-        return path.sumOf {
-            grid.get(it)
-        }
+    private fun getScore(grid: MatrixInt, to: Point): Int {
+        return grid.get(to)
     }
 
     private fun getDestinations(grid: MatrixInt, current: Step): List<Step> {
@@ -163,53 +95,45 @@ class Day17 : Day() {
 
     override fun solve2(lines: List<String>) {
         val grid = MatrixInt.build(splitLines(lines))
-//        println(grid)
-
         val distances = mutableMapOf<Step, Int>()
         val start = grid.topLeft()
         val end = grid.bottomRight()
 
-        for (i in 0 until 100) {
-            println(i)
-            val visited = mutableSetOf<Step>()
-            val toInspect = mutableListOf(
-                Step(start, Direction.SOUTH, 0),
-                Step(start, Direction.EAST, 0)
-            )
-//        distances[start] = 0
-            for (i in toInspect) {
-                distances[i] = 0
-            }
-            while (toInspect.isNotEmpty()) {
-                val current = toInspect.removeFirst()
-                if (visited.add(current)) {
-                    val destinations = getDestinations2(grid, current)
-                    toInspect.addAll(destinations - visited)
-//                println("toInspect: ${toInspect.size}")
-//                println("visited: ${visited.size}")
-//                println("destinations: $destinations")
-                    // Now take the current location score + the score for each destination and update the distance grid
-                    val currentScore = distances[current]!!
-//                println("currentScore: $currentScore")
-                    for (destination in destinations) {
-                        val score = getScore(grid, current.location, destination.location) + currentScore
-//                        if (destination.location == Point(11, 5) &&
-//                            destination.direction == Direction.SOUTH
-//                        ) {
-//                            println(destination)
-//                        }
-//                    println("to: $destination, $score")
-                        if (distances[destination] == null) {
-                            distances[destination] = score
-                        } else {
-                            distances[destination] = minOf(distances[destination]!!, score)
-                        }
+        val visited = mutableSetOf<Step>()
+        val toInspectSorted = PriorityQueue<Distance>()
+        toInspectSorted.add(Distance(Step(start, Direction.SOUTH, 0), 0))
+        toInspectSorted.add(Distance(Step(start, Direction.EAST, 0), 0))
+        for (i in toInspectSorted) {
+            distances[i.step] = 0
+        }
+        while (toInspectSorted.isNotEmpty()) {
+            val currentDistance = toInspectSorted.remove()
+            val current = currentDistance.step
+            if (visited.add(current)) {
+                val destinations = getDestinations2(grid, current)
+                // Now take the current location score + the score for each destination and update the distance grid
+                val currentScore = distances[current]!!
+                for (destination in destinations) {
+                    val score = getScore(grid, destination.location) + currentScore
+                    if (distances[destination] == null) {
+                        distances[destination] = score
+                    } else {
+                        distances[destination] = minOf(distances[destination]!!, score)
                     }
+                    toInspectSorted.add(Distance(destination, score))
                 }
             }
-            println(distances.filter {
-                it.key.location == end
-            }.minOf { it.value })
+        }
+
+        val values = grid.copy()
+        for (point in grid.allPoints()) {
+            values.set(point, Int.MAX_VALUE)
+        }
+        for (distance in distances) {
+            val v = distance.value
+            if (v < values.get(distance.key.location)) {
+                values.set(distance.key.location, distance.value)
+            }
         }
         println(distances.filter {
             it.key.location == end
