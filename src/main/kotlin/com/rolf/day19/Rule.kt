@@ -3,7 +3,7 @@ package com.rolf.day19
 data class Rule(
     val variableName: String,
     val operator: String,
-    val value: Long,
+    val value: Int,
     val next: String,
 ) {
     fun applies(part: Part): Boolean {

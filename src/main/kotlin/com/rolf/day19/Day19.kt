@@ -39,10 +39,10 @@ class Day19 : Day() {
             ","
         )
         return Part(
-            splitLine(x1, "=")[1].toLong(),
-            splitLine(m1, "=")[1].toLong(),
-            splitLine(a1, "=")[1].toLong(),
-            splitLine(s1, "=")[1].toLong(),
+            splitLine(x1, "=")[1].toInt(),
+            splitLine(m1, "=")[1].toInt(),
+            splitLine(a1, "=")[1].toInt(),
+            splitLine(s1, "=")[1].toInt(),
         )
     }
 
@@ -72,11 +72,30 @@ class Day19 : Day() {
         return Rule(
             variableName,
             operator,
-            number.toLong(),
+            number.toInt(),
             next
         )
     }
 
     override fun solve2(lines: List<String>) {
+        val (workflows, _) = groupLines(lines, "")
+        val workflows2 = workflows.map { parseWorkflow(it) }
+        val workflowMap = workflows2.associateBy { it.name }
+        var sum = 0L
+        for (x in 1..4000) {
+            println("x: $x")
+            for (m in 1..4000) {
+                println("m: $m")
+                for (a in 1..4000) {
+                    for (s in 1..4000) {
+                        val part = Part(x, m, a, s)
+                        val isAccepted = isAccepted(part, workflowMap)
+//                        println("$x $m $a $s: $isAccepted")
+                        if (isAccepted) sum++
+                    }
+                }
+            }
+        }
+        println(sum)
     }
 }
