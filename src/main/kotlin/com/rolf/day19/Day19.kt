@@ -23,16 +23,6 @@ class Day19 : Day() {
         )
     }
 
-    private fun isAccepted(part: Part, workflowMap: Map<String, Workflow>): Boolean {
-        var workflow = workflowMap.getValue("in")
-        while (true) {
-            val next = workflow.getNext(part)
-            if (next == "A") return true
-            if (next == "R") return false
-            workflow = workflowMap.getValue(next)
-        }
-    }
-
     private fun parsePart(input: String): Part {
         val (x1, m1, a1, s1) = splitLine(
             input.replace("{", "").replace("}", ""),
@@ -77,25 +67,42 @@ class Day19 : Day() {
         )
     }
 
+    private fun isAccepted(part: Part, workflowMap: Map<String, Workflow>): Boolean {
+        var workflow = workflowMap.getValue("in")
+        while (true) {
+            val next = workflow.getNext(part)
+            if (next == "A") return true
+            if (next == "R") return false
+            workflow = workflowMap.getValue(next)
+        }
+    }
+
     override fun solve2(lines: List<String>) {
         val (workflows, _) = groupLines(lines, "")
         val workflows2 = workflows.map { parseWorkflow(it) }
         val workflowMap = workflows2.associateBy { it.name }
-        var sum = 0L
-        for (x in 1..4000) {
-            println("x: $x")
-            for (m in 1..4000) {
-                println("m: $m")
-                for (a in 1..4000) {
-                    for (s in 1..4000) {
-                        val part = Part(x, m, a, s)
-                        val isAccepted = isAccepted(part, workflowMap)
-//                        println("$x $m $a $s: $isAccepted")
-                        if (isAccepted) sum++
-                    }
+        val rangesToInspect = mutableListOf(
+            "in" to Range(1..4000, 1..4000, 1..4000, 1..4000)
+        )
+
+        // Search for the next step for each range that could be potentially accepted
+        val acceptedRanges = mutableListOf<Range>()
+        while (rangesToInspect.isNotEmpty()) {
+            val (name, range) = rangesToInspect.removeFirst()
+            val nextRanges = workflowMap.getValue(name).getNext2(range)
+            for (nextRange in nextRanges) {
+                if (nextRange.first == "A") {
+                    acceptedRanges.add(nextRange.second)
+                } else if (nextRange.first != "R") {
+                    rangesToInspect.add(nextRange)
                 }
             }
         }
-        println(sum)
+
+        println(
+            acceptedRanges.sumOf {
+                it.sum()
+            }
+        )
     }
 }
