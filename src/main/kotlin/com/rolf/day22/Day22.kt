@@ -11,17 +11,6 @@ fun main() {
 class Day22 : Day() {
     override fun solve1(lines: List<String>) {
         val bricks = lines.map { parseBrick(it) }
-//        bricks.forEach {
-//            println(it)
-//        }
-
-        // Check the diff of each brick
-//        bricks.forEach {
-//            if (it.xRange.size() == 1 && it.yRange.size() > 1 && it.zRange.size() > 1) println(it)
-//            if (it.xRange.size() > 1 && it.yRange.size() == 1 && it.zRange.size() > 1) println(it)
-//            if (it.xRange.size() > 1 && it.yRange.size() > 1 && it.zRange.size() == 1) println(it)
-//            if (it.xRange.size() > 1 && it.yRange.size() > 1 && it.zRange.size() > 1) println(it)
-//        }
 
         var lastBricks = bricks.toList()
         while (true) {
@@ -32,30 +21,47 @@ class Day22 : Day() {
                 break
             }
         }
-        lastBricks.forEach {
-            println(it)
-        }
+//        lastBricks.forEach {
+//            println(it)
+//        }
 
-        println()
+//        println()
 
         // Check if a brick is supported by multiple bricks, so each of them can be removed
-        val bricksByMaxZ = lastBricks.groupBy { it.maxZ }
-        val bricksByMinZ = lastBricks.groupBy { it.minZ }
+//        val bricksByMaxZ = lastBricks.groupBy { it.maxZ }
+//        val bricksByMinZ = lastBricks.groupBy { it.minZ }
+        val toRemove = mutableSetOf<Brick>()
         for (brick in lastBricks) {
-            if (brick.minZ == 1) continue
-            val belowZ = brick.minZ - 1
-            val belowBricks = bricksByMaxZ[belowZ] ?: emptyList()
-            // If there are bricks, see if they are overlapping in both x and y
-            val supportingBricks = belowBricks.filter {
-                it.xRange.intersect(brick.xRange).isNotEmpty()
-                        && it.yRange.intersect(brick.yRange).isNotEmpty()
+            val supporting = isSupporting(brick, lastBricks)
+            val supportedBy = isSupportedBy(brick, lastBricks)
+//            println("$brick is supporting $supporting")
+//            println("$brick is supported by $supportedBy")
+
+//            if (brick.minZ == 1) continue
+//            val belowZ = brick.minZ - 1
+//            val belowBricks = bricksByMaxZ[belowZ] ?: emptyList()
+//            // If there are bricks, see if they are overlapping in both x and y
+//            val supportingBricks = belowBricks.filter {
+//                it.xRange.intersect(brick.xRange).isNotEmpty()
+//                        && it.yRange.intersect(brick.yRange).isNotEmpty()
+//            }
+            // You can remove a brick when it isn't supporting anything
+            if (supporting.isEmpty()) {
+//                println("$brick can be removed, since it doesn't support anything")
+                toRemove.add(brick)
             }
-            if (supportingBricks.size > 1) {
-                println("$supportingBricks can be removed, since they all support $brick")
+            if (supportedBy.size > 1) {
+//                println("$supportedBy can be removed, since they all support $brick")
+                toRemove.addAll(supportedBy)
             }
         }
 
-        println()
+//        println()
+//        toRemove.forEach {
+//            println(it)
+//        }
+        println(toRemove.size)
+        // 1199 too high
 
 //        // View from y
 //        for (brick in bricks) {
@@ -68,6 +74,32 @@ class Day22 : Day() {
 //            }
 //            println("$brick supports $supportsBricks")
 //        }
+    }
+
+    private fun isSupportedBy(brick: Brick, bricks: List<Brick>): List<Brick> {
+        val bricksByMaxZ = bricks.groupBy { it.maxZ }
+        val belowZ = brick.minZ - 1
+
+        val belowBricks = bricksByMaxZ[belowZ] ?: emptyList()
+        // If there are bricks, see if they are overlapping in x or y
+        return belowBricks.filter {
+            it.xRange.intersect(brick.xRange).isNotEmpty()
+                    || it.yRange.intersect(brick.yRange).isNotEmpty()
+        }
+
+    }
+
+    private fun isSupporting(brick: Brick, bricks: List<Brick>): List<Brick> {
+        val bricksByMinZ = bricks.groupBy { it.minZ }
+        val aboveZ = brick.maxZ + 1
+
+        val aboveBricks = bricksByMinZ[aboveZ] ?: emptyList()
+        // If there are bricks, see if they are overlapping in x or y
+        return aboveBricks.filter {
+            it.xRange.intersect(brick.xRange).isNotEmpty()
+                    || it.yRange.intersect(brick.yRange).isNotEmpty()
+        }
+
     }
 
     private fun moveDown(bricks: List<Brick>): List<Brick> {
@@ -92,7 +124,7 @@ class Day22 : Day() {
                         && it.yRange.intersect(brick.yRange).isNotEmpty()
             }
             if (supportingBricks.isEmpty()) {
-                println("$brick can move 1 down, because no support")
+//                println("$brick can move 1 down, because no support")
                 result.add(brick.moveDown())
             } else {
                 result.add(brick)
