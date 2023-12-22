@@ -5,11 +5,16 @@ import com.rolf.util.Location
 data class Brick(
     val from: Location,
     val to: Location,
+    var id: Int = 0,
 ) {
-    fun moveDown(): Brick {
+    override fun toString(): String {
+        return "Brick(id=$id, from=$from, to=$to)"
+    }
+
+    fun moveDown(delta:Int = 1): Brick {
         return Brick(
-            Location(from.x, from.y, from.z - 1),
-            Location(to.x, to.y, to.z - 1)
+            Location(from.x, from.y, from.z - delta),
+            Location(to.x, to.y, to.z - delta)
         )
     }
 
