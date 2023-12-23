@@ -1,5 +1,6 @@
 package com.rolf.util
 
+import java.util.*
 import kotlin.math.abs
 
 open class Matrix<T>(internal val input: MutableList<MutableList<T>>) {
@@ -330,7 +331,7 @@ open class Matrix<T>(internal val input: MutableList<MutableList<T>>) {
         to: Point,
         notAllowedValues: Set<T> = emptySet(),
         diagonal: Boolean = false,
-    ): List<Point> {
+    ): Path {
         val notAllowed = notAllowedValues.map { find(it) }.flatten().toSet()
         return findPath(from, setOf(to), notAllowed, diagonal)
     }
@@ -341,8 +342,9 @@ open class Matrix<T>(internal val input: MutableList<MutableList<T>>) {
         notAllowedLocations: Set<Point> = emptySet(),
         diagonal: Boolean = false,
         customAllowedFunction: (grid: Matrix<T>, from: Point, to: Point) -> Boolean = { _, _, _ -> true },
-    ): List<Point> {
-        return findPath(from, setOf(to), notAllowedLocations, diagonal, customAllowedFunction)
+        customScoreFunction: (grid: Matrix<T>, from: Point, to: Point) -> Int = { _, _, _ -> 1 },
+    ): Path {
+        return findPath(from, setOf(to), notAllowedLocations, diagonal, customAllowedFunction, customScoreFunction)
     }
 
     fun findPath(
@@ -351,8 +353,9 @@ open class Matrix<T>(internal val input: MutableList<MutableList<T>>) {
         notAllowedLocations: Set<Point> = emptySet(),
         diagonal: Boolean = false,
         customAllowedFunction: (grid: Matrix<T>, from: Point, to: Point) -> Boolean = { _, _, _ -> true },
-    ): List<Point> {
-        val paths: ArrayDeque<List<Point>> = ArrayDeque()
+        customScoreFunction: (grid: Matrix<T>, from: Point, to: Point) -> Int = { _, _, _ -> 1 },
+    ): Path {
+        val paths = PriorityQueue<Path>()
         val seen: MutableSet<Point> = mutableSetOf(from)
         seen.addAll(notAllowedLocations)
 
@@ -370,12 +373,12 @@ open class Matrix<T>(internal val input: MutableList<MutableList<T>>) {
 
         // Start with the neighbours of the starting point that are allowed to visit.
         for (neighbour in getNeighbours(from)) {
-            paths.add(listOf(neighbour))
+            paths.add(Path(listOf(neighbour)))
         }
 
         while (paths.isNotEmpty()) {
-            val path = paths.removeFirst()
-            val pathEnd: Point = path.last()
+            val path = paths.poll()
+            val pathEnd: Point = path.locations.last()
 
             // Arrived at destination?
             if (to.contains(pathEnd)) {
@@ -387,11 +390,12 @@ open class Matrix<T>(internal val input: MutableList<MutableList<T>>) {
                 seen.add(pathEnd)
 
                 for (neighbour in getNeighbours(pathEnd)) {
-                    paths.add(path + neighbour)
+                    val score = customScoreFunction(this, pathEnd, neighbour)
+                    paths.add(Path(path.locations + neighbour, path.score + score))
                 }
             }
         }
-        return emptyList()
+        return Path(emptyList())
     }
 
     // Note to self: When this function is not working, maybe it can be solved faster with a graph of fixed paths?

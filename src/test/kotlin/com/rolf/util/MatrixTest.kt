@@ -549,6 +549,51 @@ class MatrixTest {
     }
 
     @Test
+    fun testPriorityPath() {
+        val input = """
+            ..#.......
+            ........b.
+            .########a
+            .#........
+            .#.######.
+            .#.#......
+            .#.######.
+            .#.#......
+            .#.#......
+            ...#......
+            """.trimIndent().lines()
+        val maze = MatrixString.build(splitLines(input))
+        val walls = maze.find("#").toSet()
+
+        val start = Point(0, 0)
+        val end = Point(9, 9)
+        val path = maze.findPath(start, end, walls)
+        assertEquals(18, path.size)
+
+        // Take a detour when "a" is expensive.
+        val path2 = maze.findPath(start, end, walls, customScoreFunction = this::customScoreFunction1)
+        assertEquals(30, path2.size)
+
+        // Take a small detour when "b" is expensive.
+        val path3 = maze.findPath(start, end, walls, customScoreFunction = this::customScoreFunction2)
+        assertEquals(20, path3.size)
+    }
+
+    private fun customScoreFunction1(grid: Matrix<String>, from: Point, to: Point): Int {
+        return when (grid.get(to)) {
+            "a" -> 100
+            else -> 1
+        }
+    }
+
+    private fun customScoreFunction2(grid: Matrix<String>, from: Point, to: Point): Int {
+        return when (grid.get(to)) {
+            "b" -> 100
+            else -> 1
+        }
+    }
+
+    @Test
     fun testWaterFill() {
         val input = """
             ..........
