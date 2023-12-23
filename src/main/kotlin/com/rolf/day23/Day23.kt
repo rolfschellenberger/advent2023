@@ -89,9 +89,9 @@ class Day23 : Day() {
         val paths = graph.getPaths(start.toString(), end.toString())
 
         println(
-            paths.maxOf {
-                it.zipWithNext().sumOf {
-                    val edge = graph.edge(it.first, it.second)!!
+            paths.maxOf { path ->
+                path.zipWithNext().sumOf { pair ->
+                    val edge = graph.edge(pair.first, pair.second)!!
                     edge.weight.toInt()
                 }
             }
