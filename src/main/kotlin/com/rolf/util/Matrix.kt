@@ -208,7 +208,7 @@ open class Matrix<T>(internal val input: MutableList<MutableList<T>>) {
         vertical: Boolean = true,
         diagonal: Boolean = true,
         includeOwn: Boolean = false,
-        wrap: Boolean = false
+        wrap: Boolean = false,
     ): Set<Point> {
         val result = mutableSetOf<Point>()
         if (includeOwn) result.add(point)
@@ -329,7 +329,7 @@ open class Matrix<T>(internal val input: MutableList<MutableList<T>>) {
         from: Point,
         to: Point,
         notAllowedValues: Set<T> = emptySet(),
-        diagonal: Boolean = false
+        diagonal: Boolean = false,
     ): List<Point> {
         val notAllowed = notAllowedValues.map { find(it) }.flatten().toSet()
         return findPath(from, setOf(to), notAllowed, diagonal)
@@ -340,7 +340,7 @@ open class Matrix<T>(internal val input: MutableList<MutableList<T>>) {
         to: Point,
         notAllowedLocations: Set<Point> = emptySet(),
         diagonal: Boolean = false,
-        customAllowedFunction: (grid: Matrix<T>, from: Point, to: Point) -> Boolean = { _, _, _ -> true }
+        customAllowedFunction: (grid: Matrix<T>, from: Point, to: Point) -> Boolean = { _, _, _ -> true },
     ): List<Point> {
         return findPath(from, setOf(to), notAllowedLocations, diagonal, customAllowedFunction)
     }
@@ -350,7 +350,7 @@ open class Matrix<T>(internal val input: MutableList<MutableList<T>>) {
         to: Set<Point>,
         notAllowedLocations: Set<Point> = emptySet(),
         diagonal: Boolean = false,
-        customAllowedFunction: (grid: Matrix<T>, from: Point, to: Point) -> Boolean = { _, _, _ -> true }
+        customAllowedFunction: (grid: Matrix<T>, from: Point, to: Point) -> Boolean = { _, _, _ -> true },
     ): List<Point> {
         val paths: ArrayDeque<List<Point>> = ArrayDeque()
         val seen: MutableSet<Point> = mutableSetOf(from)
@@ -394,12 +394,85 @@ open class Matrix<T>(internal val input: MutableList<MutableList<T>>) {
         return emptyList()
     }
 
+    fun findLongestPath(
+        from: Point,
+        to: Point,
+        notAllowedLocations: Set<Point> = emptySet(),
+        diagonal: Boolean = false,
+        customAllowedFunction: (grid: Matrix<T>, from: Point, to: Point) -> Boolean = { _, _, _ -> true },
+    ): List<Point> {
+        val results = mutableListOf<List<Point>>()
+        val paths: ArrayDeque<List<Point>> = ArrayDeque()
+        val seen: MutableSet<Point> = mutableSetOf(from)
+        seen.addAll(notAllowedLocations)
+
+        // Function to filter allowed locations
+        fun isAllowed(from: Point, to: Point): Boolean {
+            if (seen.contains(to)) return false
+            if (notAllowedLocations.contains(to)) return false
+            if (!customAllowedFunction(this, from, to)) return false
+            return true
+        }
+
+        fun getDirection(from: Point, to: Point) : Direction {
+            return when {
+                from.x < to.x -> Direction.EAST
+                from.x > to.x -> Direction.WEST
+                from.y < to.y -> Direction.SOUTH
+                from.y > to.y -> Direction.NORTH
+                else -> throw RuntimeException("Must differ only on x or y axis")
+            }
+        }
+
+        fun getNeighbours(point: Point): List<Point> {
+//            return getNeighbours(point, diagonal = diagonal).filter { isAllowed(point, it) }.sorted()
+            val value = this.get(point)
+            return when (value) {
+                ">" -> listOf(getRight(point))
+                "<" -> listOf(getLeft(point))
+                "^" -> listOf(getUp(point))
+                "v" -> listOf(getDown(point))
+                else -> {
+                    val neighbours = getNeighbours(point, diagonal = diagonal).filter { isAllowed(point, it) }.sorted()
+                    neighbours.filter {neighbour ->
+                        val direction = getDirection(point, neighbour)
+                        when (get(neighbour)) {
+                            ">" -> direction != Direction.WEST
+                            "<" -> direction != Direction.EAST
+                            "^" -> direction != Direction.SOUTH
+                            "v" -> direction != Direction.NORTH
+                            else -> true
+                        }
+                    }
+//                    neighbours
+//                    getNeighbours(point, diagonal = diagonal).filter { isAllowed(point, it) }.sorted()
+                }
+            }.filterNotNull()
+        }
+
+        // Start with the neighbours of the starting point that are allowed to visit.
+        for (neighbour in getNeighbours(from)) {
+            // When we arrive at the destination, we have found a path!
+            if (to == neighbour) {
+                return listOf(from, neighbour)
+            }
+
+            // Otherwise, look for all paths starting from this neighbour
+            // The 'from' is no longer allowed
+            val path = findLongestPath(neighbour, to, notAllowedLocations + from, diagonal, customAllowedFunction)
+            if (path.isNotEmpty()) {
+                results.add(listOf(from) + path)
+            }
+        }
+        return results.maxByOrNull { it.size } ?: emptyList()
+    }
+
     fun waterFill(
         start: Point,
         notAllowedValues: Set<T>,
         horizontal: Boolean = true,
         vertical: Boolean = true,
-        diagonal: Boolean = true
+        diagonal: Boolean = true,
     ): Set<Point> {
         val watered = mutableSetOf<Point>()
         val inspect = mutableSetOf(start)
