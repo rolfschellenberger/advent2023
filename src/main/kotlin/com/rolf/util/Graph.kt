@@ -100,6 +100,26 @@ open class Graph<T> {
         return result
     }
 
+    fun getPaths(source: String, destination: String): List<List<String>> {
+        val result: MutableList<List<String>> = mutableListOf()
+        val paths = mutableListOf(listOf(source))
+        while (paths.isNotEmpty()) {
+            val path = paths.removeLast()
+            val pathEnd = path.last()
+            if (pathEnd == destination) {
+                result.add(path)
+                continue
+            }
+
+            for (neighbour in neighbours(pathEnd)) {
+                if (!path.contains(neighbour)) {
+                    paths.add(path + neighbour)
+                }
+            }
+        }
+        return result
+    }
+
     fun shortestPathAndWeight(source: String, destination: String): Pair<List<String>, Double> {
         return dijkstra(source, destination)
     }
@@ -135,7 +155,7 @@ open class Graph<T> {
         destination: String,
         unvisited: MutableSet<String>,
         distances: MutableMap<String, Double>,
-        paths: MutableMap<String, MutableList<String>>
+        paths: MutableMap<String, MutableList<String>>,
     ): Pair<List<String>, Double> {
         // For the current node, consider all of its unvisited neighbors and calculate their tentative distances
         // through the current node. Compare the newly calculated tentative distance to the current assigned
@@ -343,7 +363,7 @@ open class Graph<T> {
         neighbours: Map<String, Set<String>>,
         p: Set<String>,
         r: Set<String> = emptySet(),
-        x: Set<String> = emptySet()
+        x: Set<String> = emptySet(),
     ) {
         if (p.isEmpty() && x.isEmpty()) {
             // We have found a clique. Add it to the list matching the clique size.

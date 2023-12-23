@@ -86,30 +86,12 @@ class Day23 : Day() {
         }
 
         // Now travel the graph from start till end in all possible ways and look for the path with the highest weight
-        val paths = mutableListOf(listOf(start))
-        val results = mutableListOf<List<Point>>()
-        while (paths.isNotEmpty()) {
-            val path = paths.removeLast()
-            val pathEnd = path.last()
-            if (pathEnd == end) {
-                results.add(path)
-                continue
-            }
-
-            // Check the next options
-            val neighbours = graph.neighbours(pathEnd.toString())
-            for (neighbour in neighbours) {
-                val point = graph.getVertex(neighbour)!!.data!!
-                if (!path.contains(point)) {
-                    paths.add(path + point)
-                }
-            }
-        }
+        val paths = graph.getPaths(start.toString(), end.toString())
 
         println(
-            results.maxOf {
+            paths.maxOf {
                 it.zipWithNext().sumOf {
-                    val edge = graph.edge(it.first.toString(), it.second.toString())!!
+                    val edge = graph.edge(it.first, it.second)!!
                     edge.weight.toInt()
                 }
             }
