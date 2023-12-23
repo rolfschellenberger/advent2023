@@ -1,5 +1,8 @@
 package com.rolf.util
 
+import com.rolf.day23.Path
+import java.util.*
+import kotlin.collections.ArrayDeque
 import kotlin.math.abs
 
 open class Matrix<T>(internal val input: MutableList<MutableList<T>>) {
@@ -394,6 +397,137 @@ open class Matrix<T>(internal val input: MutableList<MutableList<T>>) {
         return emptyList()
     }
 
+    fun findAllPaths(
+        from: Point,
+        to: Point,
+        notAllowedLocations: Set<Point> = emptySet(),
+        diagonal: Boolean = false,
+        customAllowedFunction: (grid: Matrix<T>, from: Point, to: Point) -> Boolean = { _, _, _ -> true },
+    ): List<Path> {
+//        val paths: ArrayDeque<List<Point>> = ArrayDeque()
+        val paths: ArrayDeque<Path> = ArrayDeque()
+
+        // Function to filter allowed locations
+        fun isAllowed(from: Point, to: Point, path: Path): Boolean {
+            if (path.seen.contains(to)) return false
+            if (notAllowedLocations.contains(to)) return false
+            if (!customAllowedFunction(this, from, to)) return false
+            return true
+        }
+
+        fun getNeighbours(point: Point, path: Path): List<Point> {
+            return getNeighbours(point, diagonal = diagonal).filter { isAllowed(point, it, path) }.sorted()
+        }
+
+        // Start with the neighbours of the starting point that are allowed to visit.
+        for (neighbour in getNeighbours(from, Path(emptyList()))) {
+            paths.add(Path(listOf(neighbour), (notAllowedLocations + from).toMutableSet()))
+        }
+
+        val results = mutableListOf<Path>()
+        while (paths.isNotEmpty()) {
+            val path = paths.removeLast()
+            val pathEnd: Point = path.locations.last()
+
+            // Arrived at destination?
+            if (to == pathEnd) {
+                results.add(path)
+                continue
+            }
+
+            // Continue only new locations
+            if (pathEnd !in path.seen) {
+                path.seen.add(pathEnd)
+
+                for (neighbour in getNeighbours(pathEnd, path)) {
+                    paths.add(Path(path.locations + neighbour, path.seen.toMutableSet()))
+                }
+            }
+        }
+        return results
+    }
+
+    fun findAllPaths2(
+        from: Point,
+        to: Point,
+        notAllowedLocations: Set<Point> = emptySet(),
+        diagonal: Boolean = false,
+//        customAllowedFunction: (grid: Matrix<T>, from: Point, to: Point) -> Boolean = { _, _, _ -> true },
+    ): List<List<Point>> {
+        val seen: MutableSet<Point> = notAllowedLocations.toMutableSet()
+
+        // Function to filter allowed locations
+        fun isAllowed(from: Point, to: Point): Boolean {
+            if (seen.contains(to)) return false
+            if (notAllowedLocations.contains(to)) return false
+//            if (!customAllowedFunction(this, from, to)) return false
+            return true
+        }
+
+        fun getNeighbours(point: Point): List<Point> {
+            return getNeighbours(point, diagonal = diagonal).filter { isAllowed(point, it) }.sorted()
+        }
+
+        fun dfs(from: Point, path: List<Point>, paths: MutableList<List<Point>>) {
+            seen.add(from)
+
+            if (from == to) {
+                paths.add(path)
+            } else {
+                for (neighbour in getNeighbours(from)) {
+                    dfs(neighbour, path + neighbour, paths)
+                }
+            }
+
+            // Backtrack
+            seen.remove(from)
+        }
+
+        val paths = mutableListOf<List<Point>>()
+        dfs(from, mutableListOf(from), paths)
+        return paths
+    }
+
+    fun findAllPaths3(
+        from: Point,
+        to: Point,
+        notAllowedLocations: Set<Point> = emptySet(),
+        diagonal: Boolean = false,
+//        customAllowedFunction: (grid: Matrix<T>, from: Point, to: Point) -> Boolean = { _, _, _ -> true },
+    ): List<List<Point>> {
+        val seen: MutableSet<Point> = notAllowedLocations.toMutableSet()
+
+        // Function to filter allowed locations
+        fun isAllowed(from: Point, to: Point): Boolean {
+            if (seen.contains(to)) return false
+            if (notAllowedLocations.contains(to)) return false
+//            if (!customAllowedFunction(this, from, to)) return false
+            return true
+        }
+
+        fun getNeighbours(point: Point): List<Point> {
+            return getNeighbours(point, diagonal = diagonal).filter { isAllowed(point, it) }.sorted()
+        }
+
+        val paths = mutableListOf<List<Point>>()
+        val stack = Stack<Pair<Point, List<Point>>>()
+        stack.push(from to listOf(from))
+
+        while (stack.isNotEmpty()) {
+            val (location, path) = stack.pop()
+            if (location == to) {
+                paths.add(path.toList())
+            } else {
+                seen.add(location)
+                for (neighbour in getNeighbours(location)) {
+                    stack.push(neighbour to path + neighbour)
+                }
+            }
+        }
+
+        return paths
+    }
+
     fun findLongestPath(
         from: Point,
         to: Point,
@@ -414,7 +548,7 @@ open class Matrix<T>(internal val input: MutableList<MutableList<T>>) {
             return true
         }
 
-        fun getDirection(from: Point, to: Point) : Direction {
+        fun getDirection(from: Point, to: Point): Direction {
             return when {
                 from.x < to.x -> Direction.EAST
                 from.x > to.x -> Direction.WEST
@@ -434,7 +568,7 @@ open class Matrix<T>(internal val input: MutableList<MutableList<T>>) {
                 "v" -> listOf(getDown(point))
                 else -> {
                     val neighbours = getNeighbours(point, diagonal = diagonal).filter { isAllowed(point, it) }.sorted()
-                    neighbours.filter {neighbour ->
+                    neighbours.filter { neighbour ->
                         val direction = getDirection(point, neighbour)
                         when (get(neighbour)) {
                             ">" -> direction != Direction.WEST
