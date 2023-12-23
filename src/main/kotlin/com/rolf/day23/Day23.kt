@@ -12,9 +12,34 @@ class Day23 : Day() {
         val grid = MatrixString.build(splitLines(lines))
         val start = grid.find(".").first()
         val end = grid.find(".").last()
-        val notAllowed = grid.find("#").toSet()
-        val path = grid.findLongestPath(start, end, notAllowed, false)
-        println(path.size - 1)
+        val paths = grid.findAllPaths(
+            start, end,
+            grid.find("#").toSet(),
+            diagonal = false,
+            customAllowedFunction = this::isMoveAllowed
+        )
+        println(
+            paths.maxOf { it.size }
+        )
+    }
+
+    private fun isMoveAllowed(grid: Matrix<String>, from: Point, to: Point): Boolean {
+        val arrows = setOf(">", "<", "^", "v")
+
+        val fromValue = grid.get(from)
+        // We can move to any value when the fromValue is not an arrow
+        if (!arrows.contains(fromValue)) {
+            return true
+        }
+
+        // When the fromValue is an error, the to location should be in the right direction
+        return when (fromValue) {
+            ">" -> grid.getRight(from) == to
+            "<" -> grid.getLeft(from) == to
+            "^" -> grid.getUp(from) == to
+            "v" -> grid.getDown(from) == to
+            else -> throw RuntimeException("Incorrect fromValue $fromValue")
+        }
     }
 
     override fun solve2(lines: List<String>) {
@@ -23,7 +48,7 @@ class Day23 : Day() {
         val end = grid.find(".").last()
         val notAllowed = grid.find("#").toSet()
 
-        val crossPoints = mutableSetOf<Point>(start, end)
+        val crossPoints = mutableListOf(start, end)
         for (point in grid.allPoints()) {
             if (!notAllowed.contains(point)) {
                 val neighbours = grid.getNeighbours(point, diagonal = false).filter { !notAllowed.contains(it) }
@@ -52,7 +77,12 @@ class Day23 : Day() {
         for (distance in distances) {
             graph.addVertex(Vertex(distance.first.toString(), distance.first))
             graph.addVertex(Vertex(distance.second.toString(), distance.second))
-            graph.addEdge(distance.first.toString(), distance.second.toString(), weight = distance.third.toDouble())
+            graph.addEdge(
+                distance.first.toString(),
+                distance.second.toString(),
+                weight = distance.third.toDouble(),
+                edgeType = EdgeType.UNDIRECTED
+            )
         }
 
         // Now travel the graph from start till end in all possible ways and look for the path with the highest weight
@@ -76,49 +106,13 @@ class Day23 : Day() {
             }
         }
 
-        var maxSteps = 0
-        for (result in results) {
-            var steps = 0
-            for (i in 0 until result.size - 1) {
-                val from = result[i]
-                val to = result[i + 1]
-                val edge = graph.edge(from.toString(), to.toString())!!
-                steps += edge.weight.toInt()
-            }
-            maxSteps = maxOf(maxSteps, steps)
-        }
-
-        println(maxSteps)
-    }
-
-    fun bla(lines: List<String>) {
-        val grid = MatrixString.build(splitLines(lines))
-        println(grid)
-        val start = grid.find(".").first()
-        val end = grid.find(".").last()
-        println(start)
-        println(end)
-        val notAllowed = grid.find("#").toSet()
-        val paths2 = grid.findAllPaths2(start, end, notAllowed, false)
-        println(paths2.size)
         println(
-            paths2.maxOf { it.size } - 1
-        )
-        return
-
-        val paths = grid.findAllPaths(start, end, notAllowed, false)
-        println(paths.size)
-        for (path in paths) {
-            val copy = grid.copy()
-            path.locations.forEach {
-                copy.set(it, "O")
+            results.maxOf {
+                it.zipWithNext().sumOf {
+                    val edge = graph.edge(it.first.toString(), it.second.toString())!!
+                    edge.weight.toInt()
+                }
             }
-            println(copy)
-            println(path.locations.size)
-            println()
-        }
-        println(
-            paths.maxOf { it.locations.size }
         )
     }
 }

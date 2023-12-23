@@ -1,8 +1,5 @@
 package com.rolf.util
 
-import com.rolf.day23.Path
-import java.util.*
-import kotlin.collections.ArrayDeque
 import kotlin.math.abs
 
 open class Matrix<T>(internal val input: MutableList<MutableList<T>>) {
@@ -397,62 +394,13 @@ open class Matrix<T>(internal val input: MutableList<MutableList<T>>) {
         return emptyList()
     }
 
+    // Note to self: When this function is not working, maybe it can be solved faster with a graph of fixed paths?
     fun findAllPaths(
         from: Point,
         to: Point,
         notAllowedLocations: Set<Point> = emptySet(),
         diagonal: Boolean = false,
         customAllowedFunction: (grid: Matrix<T>, from: Point, to: Point) -> Boolean = { _, _, _ -> true },
-    ): List<Path> {
-//        val paths: ArrayDeque<List<Point>> = ArrayDeque()
-        val paths: ArrayDeque<Path> = ArrayDeque()
-
-        // Function to filter allowed locations
-        fun isAllowed(from: Point, to: Point, path: Path): Boolean {
-            if (path.seen.contains(to)) return false
-            if (notAllowedLocations.contains(to)) return false
-            if (!customAllowedFunction(this, from, to)) return false
-            return true
-        }
-
-        fun getNeighbours(point: Point, path: Path): List<Point> {
-            return getNeighbours(point, diagonal = diagonal).filter { isAllowed(point, it, path) }.sorted()
-        }
-
-        // Start with the neighbours of the starting point that are allowed to visit.
-        for (neighbour in getNeighbours(from, Path(emptyList()))) {
-            paths.add(Path(listOf(neighbour), (notAllowedLocations + from).toMutableSet()))
-        }
-
-        val results = mutableListOf<Path>()
-        while (paths.isNotEmpty()) {
-            val path = paths.removeLast()
-            val pathEnd: Point = path.locations.last()
-
-            // Arrived at destination?
-            if (to == pathEnd) {
-                results.add(path)
-                continue
-            }
-
-            // Continue only new locations
-            if (pathEnd !in path.seen) {
-                path.seen.add(pathEnd)
-
-                for (neighbour in getNeighbours(pathEnd, path)) {
-                    paths.add(Path(path.locations + neighbour, path.seen.toMutableSet()))
-                }
-            }
-        }
-        return results
-    }
-
-    fun findAllPaths2(
-        from: Point,
-        to: Point,
-        notAllowedLocations: Set<Point> = emptySet(),
-        diagonal: Boolean = false,
-//        customAllowedFunction: (grid: Matrix<T>, from: Point, to: Point) -> Boolean = { _, _, _ -> true },
     ): List<List<Point>> {
         val seen: MutableSet<Point> = notAllowedLocations.toMutableSet()
 
@@ -460,7 +408,7 @@ open class Matrix<T>(internal val input: MutableList<MutableList<T>>) {
         fun isAllowed(from: Point, to: Point): Boolean {
             if (seen.contains(to)) return false
             if (notAllowedLocations.contains(to)) return false
-//            if (!customAllowedFunction(this, from, to)) return false
+            if (!customAllowedFunction(this, from, to)) return false
             return true
         }
 
@@ -468,14 +416,14 @@ open class Matrix<T>(internal val input: MutableList<MutableList<T>>) {
             return getNeighbours(point, diagonal = diagonal).filter { isAllowed(point, it) }.sorted()
         }
 
-        fun dfs(from: Point, path: List<Point>, paths: MutableList<List<Point>>) {
+        fun dfs(from: Point, paths: MutableList<List<Point>>, path: List<Point> = emptyList()) {
             seen.add(from)
 
             if (from == to) {
                 paths.add(path)
             } else {
                 for (neighbour in getNeighbours(from)) {
-                    dfs(neighbour, path + neighbour, paths)
+                    dfs(neighbour, paths, path + neighbour)
                 }
             }
 
@@ -484,121 +432,8 @@ open class Matrix<T>(internal val input: MutableList<MutableList<T>>) {
         }
 
         val paths = mutableListOf<List<Point>>()
-        dfs(from, mutableListOf(from), paths)
+        dfs(from, paths)
         return paths
-    }
-
-    fun findAllPaths3(
-        from: Point,
-        to: Point,
-        notAllowedLocations: Set<Point> = emptySet(),
-        diagonal: Boolean = false,
-//        customAllowedFunction: (grid: Matrix<T>, from: Point, to: Point) -> Boolean = { _, _, _ -> true },
-    ): List<List<Point>> {
-        val seen: MutableSet<Point> = notAllowedLocations.toMutableSet()
-
-        // Function to filter allowed locations
-        fun isAllowed(from: Point, to: Point): Boolean {
-            if (seen.contains(to)) return false
-            if (notAllowedLocations.contains(to)) return false
-//            if (!customAllowedFunction(this, from, to)) return false
-            return true
-        }
-
-        fun getNeighbours(point: Point): List<Point> {
-            return getNeighbours(point, diagonal = diagonal).filter { isAllowed(point, it) }.sorted()
-        }
-
-        val paths = mutableListOf<List<Point>>()
-        val stack = Stack<Pair<Point, List<Point>>>()
-        stack.push(from to listOf(from))
-
-        while (stack.isNotEmpty()) {
-            val (location, path) = stack.pop()
-            if (location == to) {
-                paths.add(path.toList())
-            } else {
-                seen.add(location)
-                for (neighbour in getNeighbours(location)) {
-                    stack.push(neighbour to path + neighbour)
-                }
-            }
-        }
-
-        return paths
-    }
-
-    fun findLongestPath(
-        from: Point,
-        to: Point,
-        notAllowedLocations: Set<Point> = emptySet(),
-        diagonal: Boolean = false,
-        customAllowedFunction: (grid: Matrix<T>, from: Point, to: Point) -> Boolean = { _, _, _ -> true },
-    ): List<Point> {
-        val results = mutableListOf<List<Point>>()
-        val paths: ArrayDeque<List<Point>> = ArrayDeque()
-        val seen: MutableSet<Point> = mutableSetOf(from)
-        seen.addAll(notAllowedLocations)
-
-        // Function to filter allowed locations
-        fun isAllowed(from: Point, to: Point): Boolean {
-            if (seen.contains(to)) return false
-            if (notAllowedLocations.contains(to)) return false
-            if (!customAllowedFunction(this, from, to)) return false
-            return true
-        }
-
-        fun getDirection(from: Point, to: Point): Direction {
-            return when {
-                from.x < to.x -> Direction.EAST
-                from.x > to.x -> Direction.WEST
-                from.y < to.y -> Direction.SOUTH
-                from.y > to.y -> Direction.NORTH
-                else -> throw RuntimeException("Must differ only on x or y axis")
-            }
-        }
-
-        fun getNeighbours(point: Point): List<Point> {
-//            return getNeighbours(point, diagonal = diagonal).filter { isAllowed(point, it) }.sorted()
-            val value = this.get(point)
-            return when (value) {
-                ">" -> listOf(getRight(point))
-                "<" -> listOf(getLeft(point))
-                "^" -> listOf(getUp(point))
-                "v" -> listOf(getDown(point))
-                else -> {
-                    val neighbours = getNeighbours(point, diagonal = diagonal).filter { isAllowed(point, it) }.sorted()
-                    neighbours.filter { neighbour ->
-                        val direction = getDirection(point, neighbour)
-                        when (get(neighbour)) {
-                            ">" -> direction != Direction.WEST
-                            "<" -> direction != Direction.EAST
-                            "^" -> direction != Direction.SOUTH
-                            "v" -> direction != Direction.NORTH
-                            else -> true
-                        }
-                    }
-//                    neighbours
-//                    getNeighbours(point, diagonal = diagonal).filter { isAllowed(point, it) }.sorted()
-                }
-            }.filterNotNull()
-        }
-
-        // Start with the neighbours of the starting point that are allowed to visit.
-        for (neighbour in getNeighbours(from)) {
-            // When we arrive at the destination, we have found a path!
-            if (to == neighbour) {
-                return listOf(from, neighbour)
-            }
-
-            // Otherwise, look for all paths starting from this neighbour
-            // The 'from' is no longer allowed
-            val path = findLongestPath(neighbour, to, notAllowedLocations + from, diagonal, customAllowedFunction)
-            if (path.isNotEmpty()) {
-                results.add(listOf(from) + path)
-            }
-        }
-        return results.maxByOrNull { it.size } ?: emptyList()
     }
 
     fun waterFill(
