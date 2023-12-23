@@ -32,7 +32,7 @@ class Day23 : Day() {
             return true
         }
 
-        // When the fromValue is an error, the to location should be in the right direction
+        // When the fromValue is an arrow, the to location should be in the right direction
         return when (fromValue) {
             ">" -> grid.getRight(from) == to
             "<" -> grid.getLeft(from) == to
