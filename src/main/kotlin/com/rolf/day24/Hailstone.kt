@@ -1,10 +1,10 @@
 package com.rolf.day24
 
 data class Hailstone(
-    val x: Double,
-    val y: Double,
-    val z: Double,
-    val deltaX: Double,
-    val deltaY: Double,
-    val deltaZ: Double
+    val x: Long,
+    val y: Long,
+    val z: Long,
+    val deltaX: Long,
+    val deltaY: Long,
+    val deltaZ: Long,
 )
