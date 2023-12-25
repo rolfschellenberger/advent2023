@@ -308,4 +308,31 @@ class GraphTest {
             ), graph.largestCliques()
         )
     }
+
+    @Test
+    fun testFindConnectedComponents() {
+        graph.addVertex(Vertex("1"))
+        graph.addVertex(Vertex("2"))
+        graph.addVertex(Vertex("3"))
+        graph.addVertex(Vertex("4"))
+        graph.addVertex(Vertex("5"))
+        graph.addVertex(Vertex("6"))
+        graph.addEdge("1", "2", EdgeType.UNDIRECTED)
+        graph.addEdge("2", "3", EdgeType.UNDIRECTED)
+        graph.addEdge("5", "6", EdgeType.UNDIRECTED)
+
+        assertEquals(3, graph.findConnectedComponents().size)
+        assertEquals(setOf("1", "2", "3"), graph.findConnectedComponents()[0])
+        assertEquals(setOf("4"), graph.findConnectedComponents()[1])
+        assertEquals(setOf("5", "6"), graph.findConnectedComponents()[2])
+
+        graph.addEdge("4", "5", EdgeType.UNDIRECTED)
+        assertEquals(2, graph.findConnectedComponents().size)
+        assertEquals(setOf("1", "2", "3"), graph.findConnectedComponents()[0])
+        assertEquals(setOf("4", "5", "6"), graph.findConnectedComponents()[1])
+
+        graph.addEdge("3", "4", EdgeType.UNDIRECTED)
+        assertEquals(1, graph.findConnectedComponents().size)
+        assertEquals(setOf("1", "2", "3", "4", "5", "6"), graph.findConnectedComponents()[0])
+    }
 }

@@ -385,6 +385,32 @@ open class Graph<T> {
             }
         }
     }
+
+    // Find how many connected (separated) components this graph has and return the list of group of vertices
+    // https://en.wikipedia.org/wiki/Component_(graph_theory)
+    fun findConnectedComponents(): MutableList<MutableSet<String>> {
+        fun dfs(vertex: String, visited: MutableSet<String>, component: MutableSet<String>) {
+            visited.add(vertex)
+            component.add(vertex)
+            for (neighbor in neighbours(vertex)) {
+                if (!visited.contains(neighbor)) {
+                    dfs(neighbor, visited, component)
+                }
+            }
+        }
+
+        val components = mutableListOf<MutableSet<String>>()
+        val visited = mutableSetOf<String>()
+        for (vertex in vertices()) {
+            if (!visited.contains(vertex.id)) {
+                val component = mutableSetOf<String>()
+                dfs(vertex.id, visited, component)
+                components.add(component)
+            }
+        }
+
+        return components
+    }
 }
 
 class Vertex<T>(val id: String, val data: T? = null, val weight: Double = 0.0) {
