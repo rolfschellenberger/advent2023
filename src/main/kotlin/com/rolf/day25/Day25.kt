@@ -38,21 +38,6 @@ class Day25 : Day() {
             }
         }
 
-        // Look for cliques with size 3 and more to remove from the vertices to inspect
-        val edgesToInspect = graph.vertices().map { it.id }.toMutableSet()
-        println(edgesToInspect.size)
-        for (clique in graph.largestCliques()) {
-            if (clique.size >= 3) {
-                edgesToInspect.removeAll(clique)
-            }
-        }
-        println(edgesToInspect.size)
-
-        for (vertex in graph.vertices()) {
-            val neighbours = graph.neighbours(vertex.id)
-            println("${vertex.id}: ${neighbours.size}")
-        }
-
         val connectedComponents = graph.findConnectedComponents()
         assert(connectedComponents.size == 2)
         println(connectedComponents[0].size * connectedComponents[1].size)
